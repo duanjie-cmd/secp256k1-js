@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
     randomBytes = length => window.crypto.getRandomValues(new Uint8Array(length))
 }
 
-export function uint256(x, base) {
+function uint256(x, base) {
     return new BN(x, base)
 }
 
@@ -75,7 +75,7 @@ function assert(cond, msg) {
     }
 }
 
-export function ecsign(d, z) {
+function ecsign(d, z) {
     assert(d != 0, "d must not be 0")
     assert(z != 0, "z must not be 0")
     while (true) {
@@ -98,7 +98,7 @@ function JtoA(p) {
 
 //point doubling for elliptic curve in jacobian coordinates
 //formula from https://en.wikibooks.org/wiki/Cryptography/Prime_Curve/Jacobian_Coordinates
-export function ecdouble(_p) {
+function ecdouble(_p) {
     if (_p[1] == 0) {
         //return point at infinity
         return [_1, _1, _0]
@@ -166,7 +166,7 @@ function AtoJ(x, y) {
     ]
 }
 
-export function isValidPoint(x, y) {
+function isValidPoint(x, y) {
     const yy = addmod(mulmod(mulmod(x, x, P), x, P), B, P)
     return yy.eq(mulmod(y, y, P))
 }
@@ -175,7 +175,7 @@ function toHex(bn) {
     return ('00000000000000000000000000000000000000000000000000000000000000000000000000000000' + bn.toString(16)).slice(-64)
 }
 
-export function decompressKey(x, yBit) {
+function decompressKey(x, yBit) {
     let redP = BN.red('k256');
     x = x.toRed(redP)
     const y = x.redMul(x).redMul(x).redAdd(B.toRed(redP)).redSqrt()
@@ -183,12 +183,12 @@ export function decompressKey(x, yBit) {
     return (sign != yBit ? y.redNeg() : y).fromRed()
 }
 
-export function generatePublicKeyFromPrivateKeyData(pk) {
+function generatePublicKeyFromPrivateKeyData(pk) {
     const p = mulG(pk)
     return {x: toHex(p[0]), y: toHex(p[1])}
 }
 
-export function ecrecover(recId, sigr, sigs, message) {
+function ecrecover(recId, sigr, sigs, message) {
     assert(recId >= 0 && recId <= 3, "recId must be 0..3")
     assert(sigr != 0, "sigr must not be 0")
     assert(sigs != 0, "sigs must not be 0")
@@ -236,7 +236,7 @@ export function ecrecover(recId, sigr, sigs, message) {
     return {x: toHex(p[0]), y: toHex(p[1])}
 }
 
-export function ecverify (Qx, Qy, sigr, sigs, z) {
+function ecverify (Qx, Qy, sigr, sigs, z) {
     if (sigs == 0 || sigr == 0) {
         return false
     }
@@ -248,4 +248,15 @@ export function ecverify (Qx, Qy, sigr, sigs, z) {
     const RinJ = ecadd(ecmul(G, u1), ecmul(Q, u2))
     const r = JtoA(RinJ)
     return sigr.eq(r[0])
+}
+
+module.exports = {
+    uint256,
+    ecsign,
+    ecdouble,
+    isValidPoint,
+    decompressKey,
+    generatePublicKeyFromPrivateKeyData,
+    ecrecover,
+    ecverify
 }
